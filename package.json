@@ -1,6 +1,6 @@
 {
   "name": "selinestore",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "ventas de decoraciones y arreglos",
   "main": "index.js",
   "scripts": {
