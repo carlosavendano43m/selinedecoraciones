@@ -20,7 +20,7 @@ class WebpayController {
         const amount = req.body.amount;
         let data=req.body;
       
-        const returnUrl = "http://" + req.get("host")+ '/webpay-return';
+        const returnUrl = `${process.env.PROTOCOLO}://${req.get("host")}/webpay-return`;
      
         const response = await WebpayPlus.Transaction.create(buyOrder, sessionId, amount, returnUrl);
 
@@ -36,10 +36,10 @@ class WebpayController {
             let valorcurrency=0;
             let resq;
             if(fecha.getDay() !== 6 && fecha!==0){
-                resq = await axios.get(`https://mindicador.cl/api/dolar/${date}`);
+                resq = await axios.get(`${process.env.API_INDICADORES}/dolar/${date}`);
                 valorcurrency = resq.data.serie[0].valor;
             }else {
-                resq = await axios.get(`https://mindicador.cl/api`);
+                resq = await axios.get(`${process.env.API_INDICADORES}`);
                 valorcurrency = resq.data.dolar.valor;
             }
            
@@ -82,7 +82,7 @@ class WebpayController {
             "total":data.amount,
             "totalUsd":data.amountUsd,
         }
-        console.log(data);
+       
         const status = await WebpayPlus.Transaction.status(data.token);
         const response = await WebpayPlus.Transaction.commit(data.token).catch(error=>{
             return null;
@@ -128,7 +128,7 @@ class WebpayController {
                     
                     console.log('stock',qualityProduct);
                     if(products){
-                        console.log("paso por aqui")
+                  
                         qualityStock = await products.cantidad-qualityProduct;
                         console.log('cantidad',qualityProduct);
                         await discountQuality(idProduct,qualityStock);
@@ -191,9 +191,9 @@ class WebpayController {
                 }
             });
         
-            res.redirect(`http://localhost:4200/checkout-review/${data.token}`);
+            res.redirect(`${process.env.APP_URL}/checkout-review/${data.token}`);
         }else{
-            res.redirect('http://localhost:4200/checkout-payment/');
+            res.redirect(`${process.env.APP_URL}/checkout-payment/`);
         }
         
     }

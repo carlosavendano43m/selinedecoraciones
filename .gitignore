@@ -38,4 +38,4 @@ Thumbs.db
 
 # Local Netlify folder
 .gitignore.
-.variables.env
+variables.env

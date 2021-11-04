@@ -24,10 +24,10 @@ class PayPalController{
         let resq;
         let valorcurrency=0;
         if(fecha.getDay() !== 6 && fecha!==0){
-            resq = await axios.get(`https://mindicador.cl/api/dolar/${date}`);
+            resq = await axios.get(`${process.env.API_INDICADORES}/dolar/${date}`);
             valorcurrency = resq.data.serie[0].valor;
         }else {
-            resq = await axios.get(`https://mindicador.cl/api`);
+            resq = await axios.get(`${process.env.API_INDICADORES}`);
             valorcurrency = resq.data.dolar.valor;
         }
        
@@ -49,8 +49,8 @@ class PayPalController{
                 brand_name: `Seline Decoraciones`,
                 landing_page: 'NO_PREFERENCE', // Default, para mas informacion https://developer.paypal.com/docs/api/orders/v2/#definition-order_application_context
                 user_action: 'PAY_NOW', // Accion para que en paypal muestre el monto del pago
-                return_url: `http://localhost:3443/paypal/execute-payment`, // Url despues de realizar el pago
-                cancel_url: `http://localhost:4200/checkout-payment/` // Url despues de realizar el pago
+                return_url: `${req.get("host")}/paypal/execute-payment`, // Url despues de realizar el pago
+                cancel_url: `${process.env.APP_URL}/checkout-payment/` // Url despues de realizar el pago
             }
         }
 
@@ -165,9 +165,9 @@ class PayPalController{
                         }
                     });
                 
-                    res.redirect(`http://localhost:4200/checkout-review/${data.token}`);
+                    res.redirect(`${process.env.APP_URL}/checkout-review/${data.token}`);
                 }else{
-                    res.redirect('http://localhost:4200/checkout-payment/');
+                    res.redirect(`${process.env.APP_URL}/checkout-payment/`);
                 }
             }
 

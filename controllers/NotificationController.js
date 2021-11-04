@@ -16,7 +16,7 @@ class NotificationController{
 
     static sendNotification = async (req,res)=>{
         const data = req.body;
-        console.log(data);
+  
         const pushSubscription = {
             endpoint: data.endpoint,
             keys:{
@@ -27,7 +27,7 @@ class NotificationController{
 
         const payload = {
             "notification": {
-                "title": "😄😄 Decoracione Seline",
+                "title": "😄😄 Seline Decoraciones",
                 "body": "Seline Decoraciones",
                 "vibrate": [100, 50, 100],
                 "image": "https://scontent.fscl26-1.fna.fbcdn.net/v/t1.6435-9/123024487_208181027358951_1015551633780703521_n.jpg?_nc_cat=107&ccb=1-3&_nc_sid=e3f864&_nc_ohc=TxvJftad308AX9oJeWz&_nc_ht=scontent.fscl26-1.fna&oh=be47ea0666e305d7649af1292f64b0a5&oe=612E61C7",
