@@ -13,6 +13,12 @@ const Orden=require('../models/Orden');
 const {fechaformateada} = require('../helpers/formato');
 
 class APIController{
+    static getProductoSearch = async(req,res)=> {
+        const query = req.query;
+        console.log(query);
+        return res.json(query);
+    }
+
     static getMenus = async(req,res)=>{
         const category = await Categoria.find();
         const productos = await Productos.find();
@@ -20,7 +26,6 @@ class APIController{
         const data = [];
         if(category.length > 0) {
             category.forEach(element=>{
-
                 let items = [];
                 productos.forEach(x=>{
                     if(x.categoria === element.nombre){
@@ -42,22 +47,17 @@ class APIController{
     static getOptionShipping = async(req,res)=>{
         const body = req.body;
    
-       
-        
         try{
             const data = [];
             const response = await Transporte.find();
             body.forEach(element=>{
-
                 if(response.length > 0){
                     response.forEach(x=>{
                         if(x.nombre === element){
                             data.push(x);
                         }
                     })
-               
                 }
-
             });
             res.status(200).json({"res":true,"data":data});
         }catch(error){

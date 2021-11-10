@@ -12,6 +12,7 @@ router.get('/',(req,res) => {
   res.redirect('https://decoracionesseline.netlify.app/');
 })
 
+router.get('/producto-search',APIController.getProductoSearch);
 router.get('/transporte',APIController.getTransporte);
 router.get('/catalogo',APIController.getCatalogo);
 router.get('/catalogo/:id',APIController.getCatalogoDetails);
