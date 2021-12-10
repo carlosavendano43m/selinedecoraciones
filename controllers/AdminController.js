@@ -10,6 +10,8 @@ const Orden=require('../models/Orden');
 const Transporte=require('../models/Transporte');
 const GiftCard=require('../models/GiftCard');
 const Notificacion = require('../models/Notificacion');
+const Departamento = require('../models/Departamento');
+const Slider = require('../models/Slider');
 //const ProductosAdicional = require('../models/ProductosAdicional');
 ////////////////////////////// helpers //////////////////////////////
 const cloudinary = require('../helpers/Cloudinary');
@@ -17,10 +19,21 @@ const { helperImg } = require('../helpers/Sharp');
 const { notificationAdmin } = require('../helpers/AdminHelpers');
 const { fechaformateada }=require('../helpers/formato');
 const { errorHandler } = require('../helpers/dbErrorHandling');
-const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
+////////////////////////// middlewire ////////////////////////
+const { v4: uuidv4 } = require('uuid');
+const jwt = require('jsonwebtoken');
 
 class AdminController{
+    static postSlider = async(req,res)=>{
+        const body = req.body;
+
+        const model = new Slider(body);
+        const response = await model.save();
+        
+        res.status(200).json({"res":true,title:"Slider guardado",message:"Slider guardado"})
+    }
+
     static getAttributesAditional = async(req,res)=>{
         const response = await Productos.find({},{"adicional":1,"colores":1,"tallas":1,"otrasCaracteristicas":1});
         const aditional = [];
@@ -626,6 +639,7 @@ class AdminController{
 
     static postProductos = async(req,res)=>{
         let productos=req.body;
+        productos.id = uuidv4();
         //console.log(productos);
         const h = req.headers;
         const u = jwt.decode(h.authorization.replace('Bearer ',''));
@@ -635,7 +649,6 @@ class AdminController{
         const material = [];
         const imagenproductos=[];
         const otrasCaracteristicas=[];
-        const tags=req.body.tags;
         const transporte = {
             transport: productos.transport,
             anchura: productos.anchura,
@@ -674,7 +687,8 @@ class AdminController{
                 colores.push({
                     colorcodigo:element,
                     colornombre:productos.colornombre[i],
-                    colorcantidad:productos.colorcantidad[i]
+                    colorcantidad:productos.colorcantidad[i],
+                    colorimg:productos.colorimg[i],
                 })
             })
         }else{
@@ -682,7 +696,8 @@ class AdminController{
                 colores.push({
                     colorcodigo:productos.colorcodigo,
                     colornombre:productos.colornombre,
-                    colorcantidad:productos.colorcantidad
+                    colorcantidad:productos.colorcantidad,
+                    colorimg:productos.colorimg,
                 })
             }
         }
@@ -727,14 +742,16 @@ class AdminController{
             productos.adicionalnombre.forEach((element,i)=>{
                 adicional.push({
                     nombre:element,
-                    precio:productos.adicionalprecio[i]
+                    precio:productos.adicionalprecio[i],
+                    img:productos.adicionalimg[i]
                 })
             })
         }else{
             if(productos.adicionalnombre !=='' && productos.adicionalnombre){
                 adicional.push({
                     nombre:productos.adicionalnombre,
-                    precio:productos.adicionalprecio
+                    precio:productos.adicionalprecio,
+                    img:productos.adicionalimg
                 })
             }
         }
@@ -746,12 +763,11 @@ class AdminController{
         productos.ratings=0;
         productos.ratingscantidad=0;
         productos.visitas=0;
-        productos.tags = tags;
         productos.adicional = adicional;
     
         let productosModel = new Productos(productos);
         const re = await productosModel.save();
-        console.log(re);
+
         const descripcion=`${u.nombre} ${u.apellido} ha agregado el producto ${productos.titulo}`;
         const notiData = {
             titulo:`Producto agregado`,
@@ -768,10 +784,12 @@ class AdminController{
 
     static putProductos = async(req,res)=>{
         let productos=req.body;
-        console.log(productos);
+       
         const h = req.headers;
         const u = jwt.decode(h.authorization.replace('Bearer ',''));
-        const {id, tags} = productos;
+        const {idp} = productos;
+        const id = uuidv4();
+        const adicional = [];
         const tallas = [];
         const colores= [];
         const material = [];
@@ -793,25 +811,31 @@ class AdminController{
                 })
             })
         }else{
-            otrasCaracteristicas.push({
-                atributo:productos.otros,
-                valor:productos.otrosvalor  
-            })
+            if(productos.otros !== '' && productos.otros){
+                otrasCaracteristicas.push({
+                    atributo:productos.otros,
+                    valor:productos.otrosvalor  
+                })
+            }
         }
         if(typeof(productos.colorcodigo) === 'object'){
             productos.colorcodigo.forEach((element,i) =>{
                 colores.push({
                     colorcodigo:element,
                     colornombre:productos.colornombre[i],
-                    colorcantidad:productos.colorcantidad[i]
+                    colorcantidad:productos.colorcantidad[i],
+                    colorimg:productos.colorimg
                 })
             })
         }else{
-            colores.push({
-                colorcodigo:productos.colorcodigo,
-                colornombre:productos.colornombre,
-                colorcantidad:productos.colorcantidad
-            })
+            if(productos.colorcodigo !== '' && productos.colorcodigo){
+                colores.push({
+                    colorcodigo:productos.colorcodigo,
+                    colornombre:productos.colornombre,
+                    colorcantidad:productos.colorcantidad,
+                    colorimg:productos.colorimg
+                })
+            }
         }
         if(typeof(productos.tallavalor) === 'object'){
             productos.tallavalor.forEach((element,i)=>{
@@ -822,11 +846,13 @@ class AdminController{
                 }) 
             })
         }else{
-            tallas.push({
-                tallavalor:productos.tallavalor,
-                tallatipo:productos.tallatipo,
-                tallacantidad:productos.tallacantidad,
-            }) 
+            if(productos.tallavalor !== '' && productos.tallavalor){
+                tallas.push({
+                    tallavalor:productos.tallavalor,
+                    tallatipo:productos.tallatipo,
+                    tallacantidad:productos.tallacantidad,
+                }) 
+            }
         }
         
         if(typeof(productos.materialnombre) === 'object'){
@@ -840,11 +866,31 @@ class AdminController{
             })
 
         }else{
-            material.push({
-                materialnombre:productos.materialnombre,
-                materialtipo:productos.tallatipo,
-                materialcantidad:productos.tallacantidad,
-            }) 
+            if(productos.materialnombre !== '' && productos.materialnombre){
+                material.push({
+                    materialnombre:productos.materialnombre,
+                    materialtipo:productos.tallatipo,
+                    materialcantidad:productos.tallacantidad,
+                }) 
+            }
+        }
+
+        if(typeof(productos.adicionalnombre) === 'object'){
+            productos.adicionalnombre.forEach((element,i)=>{
+                adicional.push({
+                    nombre:element,
+                    precio:productos.adicionalprecio[i],
+                    img:productos.adicionalimg[i]
+                })
+            })
+        }else{
+            if(productos.adicionalnombre !=='' && productos.adicionalnombre){
+                adicional.push({
+                    nombre:productos.adicionalnombre,
+                    precio:productos.adicionalprecio,
+                    img:productos.adicionalimg
+                })
+            }
         }
       
         if(typeof(productos.img) === 'string' ){
@@ -876,10 +922,10 @@ class AdminController{
             });
         }
 
-        const {codigo,titulo,categoria,subcategoria,marcas,descripcion,cantidad,precio,descuentos} = productos;
+        const {codigo,titulo,categoria,subcategoria,marcas,descripcion,departamento,tipoventa,cantidad,precio,preciodolar,descuentos,tags} = productos;
 
-        const response = await Productos.findByIdAndUpdate(id,{codigo,titulo,categoria,subcategoria,marcas,descripcion,cantidad,precio,descuentos,material,colores,imagenproductos,imagenproductosOptimizada,tallas,transporte,otrasCaracteristicas});
-        console.log(response);
+        const response = await Productos.findByIdAndUpdate(idp,{id,codigo,titulo,categoria,subcategoria,marcas,descripcion,cantidad,precio,preciodolar,descuentos,material,colores,imagenproductos,imagenproductosOptimizada,tallas,transporte,otrasCaracteristicas,departamento,tipoventa,tags,adicional});
+    
         if(response){
             const notiData = {
                 titulo:`Producto modificado`,

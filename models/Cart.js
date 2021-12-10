@@ -3,6 +3,8 @@ const { Schema, model } = require('mongoose');
 const CartSchema = new Schema({
     id:String,
     items:Array,
+    fecha:String,
+    hora:String,
     total:Number,
     totalformateado:String,
     cantidad:Number,

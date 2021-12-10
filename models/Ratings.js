@@ -1,5 +1,4 @@
 const { Schema, model } = require('mongoose');
-const { stringify } = require('querystring');
 
 const RatingsSchema = new Schema({
     id:String,

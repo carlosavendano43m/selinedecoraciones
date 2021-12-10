@@ -14,9 +14,72 @@ const {fechaformateada} = require('../helpers/formato');
 
 class APIController{
     static getProductoSearch = async(req,res)=> {
-        const query = req.query;
-        console.log(query);
-        return res.json(query);
+        const query = req.query.search;
+        try{
+            const resp= await Productos.find({'titulo':{'$regex':query,'$options' : 'i'}});
+
+            let suggestions = [];
+            let relatedCategories = [];
+            let relateBrands = [];
+           
+            if(resp.length > 0){
+
+                resp.forEach((x,i)=>{
+                    if(i<9){
+                        let text = x.titulo;
+                        let url = `/productos/${x._id}`;
+                        suggestions.push({
+                            text,
+                            type:1,
+                            url
+                        })
+                    }
+                })
+
+                const b = [... new Set(resp.map(x=>x.marcas))];
+                
+                b.forEach(x=>{
+                    if(x!==''){
+                        let url = x.toLowerCase().split(' ').join('-');
+                        let text = x;
+                        relateBrands.push({
+                            text,
+                            type:2,
+                            url
+                        }) 
+                    } 
+                });
+                
+                const c = [... new Set(resp.map(x=>x.categoria))];
+             
+                c.forEach(x=>{
+                    if(x!==''){
+                        let url = x.toLowerCase().split(' ').join('-');
+                        let text = x;
+                        relatedCategories.push({
+                            text,
+                            type:3,
+                            url
+                        }) 
+                    }
+                });
+         
+            }
+         
+            
+            const response = {
+                searchTerm:query,
+                suggestions,
+                relatedCategories,
+                relateBrands
+            }
+            console.log(response);
+            return res.status(200).json(response);
+            
+        }catch(error){
+            console.log(error);
+            res.status(500).json(error);
+        }
     }
 
     static getMenus = async(req,res)=>{

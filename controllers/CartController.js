@@ -54,6 +54,8 @@ class CartController{
         
         const cart={
             items:[data],
+            fecha:data.fecha,
+            hora:data.hora,
             total:data.precio,
             totalformateado:data.precioformateado,
             cantidad:data.cantidad,
